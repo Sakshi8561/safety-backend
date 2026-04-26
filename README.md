@@ -44,22 +44,22 @@
 * PostgreSQL used as source of truth
 * Application kept stateless (no in-memory storage)
 
-## 🔥 Concurrency Handling
+## Concurrency Handling
 
 * Redis `INCR` ensures atomic updates
 * Prevents race condition in bot limit test (100 max)
-## ▶️ How to Run
+## How to Run
 
 1. Start Redis & PostgreSQL
 2. Run Spring Boot app
 3. Test APIs via Postman
 
-## 📬 API Examples
+## API Examples
 
 POST /api/posts
 POST /api/posts/{postId}/comments
 POST /api/posts/{postId}/like
-## 🎯 Result
+## Result
 
 * Successfully implemented all guardrails
 * Handles concurrency and distributed state using Redis
