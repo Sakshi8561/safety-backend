@@ -61,5 +61,63 @@ POST /api/posts/{postId}/comments
 POST /api/posts/{postId}/like
 ## Result
 
+## Testing & Proof
+
+The system was manually tested using Postman to verify all guardrail conditions defined in the assignment.
+
+### 1. Bot Limit Test (Horizontal Cap)
+
+* Sent more than 100 bot requests to the same post
+* Result:
+
+  * First 100 requests → allowed
+  * 101st request → **rejected with "Bot limit reached" (HTTP 429)**
+* Verified using Redis key:
+
+  post:{postId}:bot_count = 100
+
+### 2. Cooldown Test (Bot ↔ Human)
+
+* Same bot attempted multiple interactions on the same user within 10 minutes
+* Result:
+
+  * First interaction → **allowed**
+  * Second interaction → **blocked ("Cooldown active")**
+* Verified using Redis key with TTL:
+
+  cooldown:bot_{botId}:human_{userId}
+### 3. Depth Limit Test (Vertical Cap)
+
+* Sent request with `depthLevel > 20`
+* Result:
+
+  * Request rejected with **"Max depth reached"**
+* Ensures no deep recursive comment threads
+
+
+### 4. Notification System Test
+
+* First bot interaction → **instant notification logged**
+* Multiple interactions within 15 minutes → stored in Redis list:
+
+  user:{userId}:pending_notifs
+* Scheduler (runs every 5 minutes):
+
+  * Aggregates notifications
+  * Logs summarized message:
+    Summarized Push Notification: Bot X and N others interacted
+### 5. Concurrency Handling Test
+
+* Simulated multiple bot requests on the same post
+* Redis `INCR` operation ensured:
+
+  * Atomic updates
+  * No race condition
+  * Maximum limit strictly enforced at 100
+
+### Conclusion
+
+All guardrails (Bot limit, Cooldown, Depth control, Notification batching) were successfully tested and validated using Redis-based atomic operations and TTL mechanisms.
+
 * Successfully implemented all guardrails
 * Handles concurrency and distributed state using Redis
